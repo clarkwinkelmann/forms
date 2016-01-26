@@ -1,0 +1,1 @@
+<p>{{ $the_message }}</p>

@@ -1,0 +1,8 @@
+/vendor
+/node_modules
+/nbproject
+Homestead.yaml
+Homestead.json
+composer.lock
+.env
+*~
