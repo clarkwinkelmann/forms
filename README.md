@@ -21,7 +21,7 @@ If you setup a redirect, your users will not even see this application.
 
 ## How to use
 
-## Installation
+### Installation
 
 This is a PHP application built with the Laravel Framework.
 
@@ -77,7 +77,7 @@ Then configure your HTML form in the following fashion:
 </form>
 ```
 
-The handler URL only accept `post` requests.
+The handler URL only accepts `post` requests.
 There is no route protection whatsoever (e.g. CSRF is disabled).
 
 For optimal user experience, you should validate all the fields **before** sending the form.
