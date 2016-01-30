@@ -49,6 +49,7 @@ return [
 		'submitted'         => 'Your submission has been saved. You\'re all done !',
 		'email_sent'        => 'We sent a confirmation email to your address so you\'re extra sure it worked !',
 		'email_failed'      => 'We tried to send a confirmation email but an error occurred. You should report that to the form owner. But don\'t worry, your submission has been successfully submitted ;-)',
+		'below_summary'     => 'You can find a copy of your submission below:',
 
 	],
 

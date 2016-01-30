@@ -104,6 +104,7 @@ class SubmissionController extends Controller {
 					Mail::send('emails.confirmation', [
 						// Cannot call it $message because it conflicts with a Illuminate\Mail\Message object
 						'the_message' => $form->confirmation_message,
+						'submission' => $submission,
 					], function($message) use($email, $form) {
 						$message->from($form->owner_email, is_null($form->owner_name) ? $form->owner_email : $form->owner_name);
 
