@@ -18,7 +18,7 @@ class FormFieldController extends Controller {
 		$form = Form::where('slug', $form_slug)->firstOrFail();
 
 		$this->validate($request, [
-			'slug'  => 'required|alpha_dash|unique:fields,slug,' . $form->id,
+			'slug'  => 'required|alpha_dash|unique:fields,slug,NULL,id,form_id,' . $form->id,
 			'title' => 'required|string',
 			'rules' => 'string',
 		]);
@@ -41,7 +41,7 @@ class FormFieldController extends Controller {
 		$field = $form->fields()->where('slug', $field_slug)->firstOrFail();
 
 		$this->validate($request, [
-			'slug'  => 'required|alpha_dash|unique:fields,slug,' . $form->id,
+			'slug'  => 'required|alpha_dash|unique:fields,slug,' . $field->id . ',id,form_id,' . $form->id,
 			'title' => 'required|string',
 			'rules' => 'string',
 		]);
