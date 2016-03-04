@@ -27,8 +27,10 @@ return [
 
 	'help' => [
 
+		'available_at_url'         => 'You can POST your form to :url',
 		'send_email_to'            => 'Coma-separated list of email that should recieve a notification for each new submission',
-		'confirmation_message'     => 'A confirmation message that will be sent by email to the user when he submits the form. Leave empty for none',
+		'confirmation_message'     => 'A confirmation message that will be sent by email to the user when he submits the form. Leave empty for none.',
+		'confirmation_formatting'  => 'Markdown is enabled. Use :slug to display a field value.',
 		'confirmation_email_field' => 'The slug of the field to use as the email address of the user',
 		'owner_email'              => 'The email that will be used in the "from" field of all sent emails',
 		'owner_name'               => 'The name that will be used in the "from" field of all sent emails',

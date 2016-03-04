@@ -1,4 +1,4 @@
-<p>{{ $the_message }}</p>
+{!! $html_message  !!}
 
 <p>{{ trans('submission.message.below_summary') }}</p>
 

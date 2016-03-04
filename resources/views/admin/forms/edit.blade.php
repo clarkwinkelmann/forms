@@ -18,6 +18,7 @@
 			<div class="form-group">
 				<label for="slug">{{ trans('form.label.slug') }}</label>
 				<input class="form-control" type="text" name="slug" id="slug" value="{{ $form->slug }}" required>
+				<span class="help-block">{{ trans('form.help.available_at_url', ['url' => url('forms/' . $form->slug)]) }}</span>
 			</div>
 
 			<div class="form-group">
@@ -42,8 +43,9 @@
 
 			<div class="form-group">
 				<label for="confirmation_message">{{ trans('form.label.confirmation_message') }}</label>
-				<textarea class="form-control" name="confirmation_message" id="confirmation_message">{{ $form->confirmation_message }}</textarea>
+				<textarea class="form-control" name="confirmation_message" id="confirmation_message" style="min-height: 10em;">{{ $form->confirmation_message }}</textarea>
 				<span class="help-block">{{ trans('form.help.confirmation_message') }}</span>
+				<span class="help-block">{{ trans('form.help.confirmation_formatting') }}</span>
 			</div>
 
 			<div class="form-group">

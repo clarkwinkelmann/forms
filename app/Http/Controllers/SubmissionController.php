@@ -101,9 +101,23 @@ class SubmissionController extends Controller {
 				if($email_validator->fails()) {
 					Log::error('Confirmation email not sent : Invalid email address "' . $email . '" in field "' . $email_field->slug . '" of submission ' . $submission->id . ' on form "' . $form->slug . '"');
 				} else {
+					$parsedown = new \Parsedown();
+
+					$html_message = $parsedown->text($form->confirmation_message);
+					
+					$html_message = preg_replace_callback('/\:([0-9a-z_-]+)\b/i', function($matches) use($submission) {
+						$field = $submission->fields->where('slug', $matches[1])->first();
+
+						if(!is_null($field)) {
+							return e($field->pivot->value);
+						}
+
+						return ':' . $matches[1];
+					}, $html_message);
+
 					Mail::send('emails.confirmation', [
 						// Cannot call it $message because it conflicts with a Illuminate\Mail\Message object
-						'the_message' => $form->confirmation_message,
+						'html_message' => $html_message,
 						'submission' => $submission,
 					], function($message) use($email, $form) {
 						$message->from($form->owner_email, is_null($form->owner_name) ? $form->owner_email : $form->owner_name);
