@@ -10,11 +10,11 @@ Installing a CMS just to get a form plugin is way too resource-hungry,
 and I don't want to code a crappy PHP script that will be copied from site to site
 and end up in a bunch of unmaintainable different versions.
 
-So I created Form, a Laravel app that can be set up on a dedicated host,
+So I created Forms, a Laravel app that can be set up on a dedicated host,
 where you can create as many form handlers as you need.
 
 You configure the field names and validation rules, email notification and redirects
-in Form, and then you're ready to implement your custom form on your website.
+in Forms, and then you're ready to implement your custom form on your website.
 
 You will usually point the `action` attribute of your HTML form to Forms.
 If you setup a redirect, your users will not even see this application.
@@ -27,7 +27,7 @@ This is a PHP application built with the Laravel Framework.
 
 The app was tested under a PHP/Apache/MySQL setup but any configuration supported by Laravel should work out of the box.
 
-The better option is to install the app on its own subdomain, e.g. `forms.yourdomain.com`.
+The best option is to install the app on its own subdomain, e.g. `forms.yourdomain.com`.
 If your forms are hosted under an HTTPS-enabled server you should make sure they are submitted through HTTPS too.
 
 ```bash
