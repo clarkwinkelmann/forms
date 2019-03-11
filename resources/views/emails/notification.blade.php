@@ -17,6 +17,8 @@
 	<dt>{{ $field->title }}</dl>
 	@if(is_null($field_data))
 	<dd><em>{{ trans('field.label.no_value') }}</em></dd>
+	@elseif(str_contains($field_data->pivot->value, ['http://', 'https://']))
+	<dd><em>{{ trans('field.email_url_redacted') }}</em></dd>
 	@else
 	<dd>{{ $field_data->pivot->value }}</dd>
 	@endif

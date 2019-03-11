@@ -49,4 +49,6 @@ return [
 
 	],
 
+    'email_url_redacted' => 'La valeur contient une url et a été cachée. Consultez le message complet via l\'interface web',
+
 ];

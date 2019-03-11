@@ -49,4 +49,6 @@ return [
 
 	],
 
+    'email_url_redacted' => 'The value contains an url and has been redacted. Check the full message online.',
+
 ];
