@@ -6,13 +6,17 @@
 @extends('master', ['title' => trans('submission.action.show')])
 
 @section('content')
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.forms.index') }}">{{ trans('form.heading.list') }}</a></li>
-        <li>
-            <a href="{{ route('admin.forms.submissions.index', $form->slug) }}">{{ trans('submission.heading.list') }}</a>
-        </li>
-        <li class="active">{{ trans('submission.action.edit') }}</li>
-    </ol>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ route('admin.forms.index') }}">{{ trans('form.heading.list') }}</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ route('admin.forms.submissions.index', $form->slug) }}">{{ trans('submission.heading.list') }}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ trans('submission.action.edit') }}</li>
+        </ol>
+    </nav>
 
     <h1>{{ trans('submission.heading.single_for', ['form' => $form->title]) }}</h1>
 

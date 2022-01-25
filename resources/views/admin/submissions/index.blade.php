@@ -3,10 +3,14 @@
 @extends('master', ['title' => trans('submission.heading.list')])
 
 @section('content')
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.forms.index') }}">{{ trans('form.heading.list') }}</a></li>
-        <li class="active">{{ trans('submission.heading.list') }}</li>
-    </ol>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ route('admin.forms.index') }}">{{ trans('form.heading.list') }}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ trans('form.heading.list') }}</li>
+        </ol>
+    </nav>
 
     <h1>{{ trans('submission.heading.list_for', ['form' => $form->title]) }}</h1>
 
@@ -31,7 +35,7 @@
                     @endforeach
                 </td>
                 <td>
-                    <a class="btn btn-default"
+                    <a class="btn btn-secondary"
                        href="{{ route('admin.forms.submissions.show', [$form->slug, $submission->id]) }}">{{ trans('submission.action.show') }}</a>
                     <form action="{{ route('admin.forms.submissions.show', [$form->slug, $submission->id]) }}"
                           method="post">

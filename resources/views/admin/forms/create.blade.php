@@ -1,10 +1,14 @@
 @extends('master', ['title' => trans('form.action.create')])
 
 @section('content')
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.forms.index') }}">{{ trans('form.heading.list') }}</a></li>
-        <li class="active">{{ trans('form.action.create') }}</li>
-    </ol>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ route('admin.forms.index') }}">{{ trans('form.heading.list') }}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ trans('form.action.create') }}</li>
+        </ol>
+    </nav>
 
     <h1>{{ trans('form.action.create') }}</h1>
 

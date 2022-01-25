@@ -52,7 +52,7 @@ class FormController extends Controller
         $this->validate($request, [
             'slug' => 'required|alpha_dash|unique:forms,slug,' . $form->id,
             'title' => 'required|string',
-            'accept_submissions' => 'nullable|accepted',
+            'accept_submissions' => 'nullable|boolean',
             'send_email_to' => 'nullable|string',
             'confirmation_message' => 'nullable|string',
             'confirmation_email_field' => 'nullable|exists:fields,slug,form_id,' . $form->id,

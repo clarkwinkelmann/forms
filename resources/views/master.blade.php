@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="{{ config('locale') }}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,18 +8,17 @@
 
     <title>{{ $title ?? 'Forms' }}</title>
 
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 </head>
 <body>
-<nav class="navbar navbar-default">
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
     <div class="container">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="{{ url('/') }}">
-                Forms
-            </a>
-        </div>
-        <ul class="nav navbar-nav navbar-right">
-            <li><a href="{{ url('/admin') }}">
+        <a class="navbar-brand" href="{{ url('/') }}">
+            Forms
+        </a>
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="{{ url('/admin') }}">
                     @if (Auth::guest())
                         {{ trans('admin.area_title') }}
                     @else
@@ -43,7 +42,7 @@
 
     @if(session()->has('message'))
         <div class="alert alert-info">
-            <p>{{ session('message') }}</p>
+            {{ session('message') }}
         </div>
     @endif
 
