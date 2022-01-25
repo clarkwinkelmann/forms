@@ -2,6 +2,8 @@
 
 <p>{{ trans('submission.heading.new_submission_on', ['form' => $submission->form->title]) }}</p>
 
+<p><a href="{{ route('admin.forms.submissions.show', [$submission->form->slug, $submission->id]) }}">{{ trans('submission.label.view_online') }}</a></p>
+
 <dl>
     <dt>{{ trans('submission.label.created_at') }}</dt>
     <dd>{{ $submission->created_at }}</dd>

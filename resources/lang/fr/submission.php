@@ -2,6 +2,7 @@
 
 return [
     'label' => [
+        'view_online' => 'Voir la réponse en ligne',
         'created_at' => 'Soumis le',
         'preview' => 'Aperçu',
     ],

@@ -2,6 +2,7 @@
 
 return [
     'label' => [
+        'view_online' => 'View submission online',
         'created_at' => 'Submitted at',
         'preview' => 'Preview',
     ],
