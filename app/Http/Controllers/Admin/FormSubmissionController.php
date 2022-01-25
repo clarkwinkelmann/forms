@@ -1,53 +1,48 @@
-<?php namespace App\Http\Controllers\Admin;
+<?php
 
-/**
- * Forms, a simple WWW form handler as-a-service
- * @copyright (c) 2016 Clark Winkelmann
- * @license MIT
- */
+namespace App\Http\Controllers\Admin;
 
-use App\Form;
 use App\Http\Controllers\Controller;
-use App\Submission;
+use App\Models\Form;
+use App\Models\Submission;
 use Illuminate\Http\Request;
 
-class FormSubmissionController extends Controller {
+class FormSubmissionController extends Controller
+{
+    public function index($form_slug)
+    {
+        $form = Form::where('slug', $form_slug)->firstOrFail();
 
-	public function index($form_slug)
-	{
-		$form = Form::where('slug', $form_slug)->firstOrFail();
+        $submissions = $form->submissions()->orderBy('created_at', 'desc')->paginate(20);
 
-		$submissions = $form->submissions()->orderBy('created_at', 'desc')->paginate(20);
+        return view('admin.submissions.index', [
+            'form' => $form,
+            'submissions' => $submissions,
+        ]);
+    }
 
-		return view('admin.submissions.index', [
-			'form'        => $form,
-			'submissions' => $submissions,
-		]);
-	}
+    public function show($form_slug, $submission_id)
+    {
+        $submission = Submission::findOrFail($submission_id);
 
-	public function show($form_slug, $submission_id)
-	{
-		$submission = Submission::findOrFail($submission_id);
+        $fields = $submission->fields()->orderBy('title')->get();
 
-		$fields = $submission->fields()->orderBy('title')->get();
+        return view('admin.submissions.show', [
+            'form' => $submission->form,
+            'submission' => $submission,
+            'fields' => $fields,
+        ]);
+    }
 
-		return view('admin.submissions.show', [
-			'form'       => $submission->form,
-			'submission' => $submission,
-			'fields'     => $fields,
-		]);
-	}
+    public function destroy($form_slug, $submission_id, Request $request)
+    {
+        $submission = Submission::findOrFail($submission_id);
 
-	public function destroy($form_slug, $submission_id, Request $request)
-	{
-		$submission = Submission::findOrFail($submission_id);
+        $form = $submission->form;
 
-		$form = $submission->form;
+        $submission->delete();
 
-		$submission->delete();
-
-		return redirect()->route('admin.forms.submissions.index', $form->slug)
-				->with('message', trans('submission.message.delete_success'));
-	}
-
+        return redirect()->route('admin.forms.submissions.index', $form->slug)
+            ->with('message', trans('submission.message.delete_success'));
+    }
 }

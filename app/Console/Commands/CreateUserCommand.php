@@ -1,73 +1,52 @@
-<?php namespace App\Console\Commands;
+<?php
 
-/**
- * Forms, a simple WWW form handler as-a-service
- * @copyright (c) 2016 Clark Winkelmann
- * @license MIT
- */
+namespace App\Console\Commands;
 
-use App\User;
+use App\Models\User;
 use Illuminate\Console\Command;
 
-class CreateUserCommand extends Command {
+class CreateUserCommand extends Command
+{
+    protected $signature = 'forms:user';
+    protected $description = 'Create a new user';
 
-	/**
-	 * The name and signature of the console command.
-	 *
-	 * @var string
-	 */
-	protected $signature = 'forms:user';
+    public function handle()
+    {
+        $this->info('This command will create or update a user account.');
+        $this->info('Submit "cancel" as the value to cancel anytime.');
 
-	/**
-	 * The console command description.
-	 *
-	 * @var string
-	 */
-	protected $description = 'Create a new user';
+        $email = $this->ask('Email address', '');
 
-	/**
-	 * Execute the console command.
-	 *
-	 * @return mixed
-	 */
-	public function handle()
-	{
-		$this->info('This command will create or update a user account.');
-		$this->info('Submit "cancel" as the value to cancel anytime.');
+        if ($email == 'cancel') {
+            $this->info('Cancelled.');
+            return;
+        }
 
-		$email = $this->ask('Email address', '');
+        $user = User::where('email', $email)->first();
 
-		if($email == 'cancel') {
-			$this->info('Cancelled.');
-			return;
-		}
+        if (is_null($user)) {
+            $this->info('A new user account will be created.');
+            $password = $this->secret('Choose a password');
 
-		$user = User::where('email', $email)->first();
+            if ($password == 'cancel') {
+                $this->info('Cancelled.');
+                return;
+            }
 
-		if(is_null($user)) {
-			$this->info('A new user account will be created.');
-			$password = $this->secret('Choose a password');
+            $user = new User;
+            $user->email = $email;
+            $user->password = bcrypt($password);
+            $user->save();
 
-			if($password == 'cancel') {
-				$this->info('Cancelled.');
-				return;
-			}
+            $this->info('New user created.');
+        } else {
+            $this->info('Entering edit mode for this account.');
+            $password = $this->secret('Choose a new password:');
 
-			$user = new User;
-			$user->email = $email;
-			$user->password = bcrypt($password);
-			$user->save();
+            $user->password = bcrypt($password);
+            $user->save();
 
-			$this->info('New user created.');
-		} else {
-			$this->info('Entering edit mode for this account.');
-			$password = $this->secret('Choose a new password:');
-
-			$user->password = bcrypt($password);
-			$user->save();
-
-			$this->info('User updated.');
-		}
-	}
-
+            $this->info('User updated.');
+        }
+    }
 }

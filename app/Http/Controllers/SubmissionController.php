@@ -1,147 +1,144 @@
-<?php namespace App\Http\Controllers;
+<?php
 
-/**
- * Forms, a simple WWW form handler as-a-service
- * @copyright (c) 2016 Clark Winkelmann
- * @license MIT
- */
+namespace App\Http\Controllers;
 
-use DB;
-use Log;
-use Mail;
-use Validator;
-
-use App\Submission;
-use App\Form;
+use App\Models\Form;
+use App\Models\Submission;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Message;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
-class SubmissionController extends Controller {
+class SubmissionController extends Controller
+{
+    public function store($form_slug, Request $request)
+    {
+        $form = Form::where('slug', $form_slug)->firstOrFail();
 
-	public function store($form_slug, Request $request)
-	{
-		$form = Form::where('slug', $form_slug)->firstOrFail();
+        if (!$form->accept_submissions) {
+            return response()->view('submissions.closed', [], 403);
+        }
 
-		if(!$form->accept_submissions) {
-			return response()->view('submissions.closed', [], 403);
-		}
+        $fields = $form->fields;
 
-		$fields = $form->fields;
+        $rules = $fields->pluck('rules', 'slug')->toArray();
 
-		$rules = $fields->pluck('rules', 'slug')->toArray();
+        try {
+            $request->validate($rules);
+        } catch (ValidationException $exception) {
+            return response()->view('submissions.errors', ['messages' => $exception->validator->errors()], 422);
+        }
 
-		$validator = Validator::make($request->all(), $rules);
+        DB::beginTransaction();
 
-		if($validator->fails()) {
-			return response()->view('submissions.errors', ['messages' => $validator->errors()], 422);
-		}
+        $submission = new Submission;
+        $submission->user_ip = $request->ip();
+        $submission->user_agent = $request->server('HTTP_USER_AGENT');
+        $submission->user_referer = $request->server('HTTP_REFERER');
 
-		DB::beginTransaction();
+        $form->submissions()->save($submission);
 
-		$submission = new Submission;
-		$submission->user_ip      = $request->ip();
-		$submission->user_agent   = $request->server('HTTP_USER_AGENT');
-		$submission->user_referer = $request->server('HTTP_REFERER');
+        foreach ($fields as $field) {
+            $value = $request->get($field->slug, null);
 
-		$form->submissions()->save($submission);
+            // Do not store null or non-given values
+            if (is_null($value)) {
+                continue;
+            }
 
-		foreach($fields as $field) {
-			$value = $request->get($field->slug, null);
+            $submission->fields()->save($field, [
+                'value' => $value,
+            ]);
+        }
 
-			// Do not store null or non-given values
-			if(is_null($value)) {
-				continue;
-			}
+        DB::commit();
 
-			$submission->fields()->save($field, [
-				'value' => $value,
-			]);
-		}
+        if (!is_null($form->send_email_to)) {
+            $send_to = explode(',', $form->send_email_to);
 
-		DB::commit();
+            foreach ($send_to as $email) {
+                Mail::send('emails.notification', [
+                    'submission' => $submission,
+                ], function (Message $message) use ($email, $form) {
+                    if ($form->owner_email) {
+                        $message->from($form->owner_email, $form->owner_name);
+                    }
 
-		if(!is_null($form->send_email_to)) {
-			$send_to = explode(',', $form->send_email_to);
+                    $message->to($email);
 
-			foreach($send_to as $email) {
-				Mail::send('emails.notification', [
-					'submission' => $submission,
-				], function($message) use($email, $form) {
-					$message->from($form->owner_email, is_null($form->owner_name) ? $form->owner_email : $form->owner_name);
+                    $message->subject(trans('submission.heading.new_submission_on', ['form' => $form->title]));
+                });
+            }
+        }
 
-					$message->to($email);
+        /**
+         * This var will hold the email confirmation status
+         * null: Nothing happened about confirmation
+         * true: Email sent
+         * false: Tried to send email but error occurred
+         */
+        $email_sent_successfully = null;
 
-					$message->subject(trans('submission.heading.new_submission_on', ['form' => $form->title]));
-				});
-			}
-		}
+        if (!is_null($form->confirmation_message)) {
+            $email_sent_successfully = false; // From now defaults to false
 
-		/**
-		 * This var will hold the email confirmation status
-		 * null: Nothing happened about confirmation
-		 * true: Email sent
-		 * false: Tried to send email but error occurred
-		 */
-		$email_sent_successfully = null;
+            $email_field = $form->fields()->where('slug', $form->confirmation_email_field)->first();
 
-		if(!is_null($form->confirmation_message)) {
-			$email_sent_successfully = false; // From now defaults to false
+            if (is_null($email_field)) {
+                logger()->error('Confirmation email not sent : Invalid field "' . $form->confirmation_email_field . '" for form "' . $form->slug . '"');
+            } else {
+                $email = $submission->field($email_field)->pivot->value;
 
-			$email_field = $form->fields()->where('slug', $form->confirmation_email_field)->first();
+                $email_validator = Validator::make(
+                    ['email' => $email],
+                    ['email' => 'required|email']
+                );
 
-			if(is_null($email_field)) {
-				Log::error('Confirmation email not sent : Invalid field "' . $form->confirmation_email_field . '" for form "' . $form->slug . '"');
-			} else {
-				$email = $submission->field($email_field)->pivot->value;
+                if ($email_validator->fails()) {
+                    logger()->error('Confirmation email not sent : Invalid email address "' . $email . '" in field "' . $email_field->slug . '" of submission ' . $submission->id . ' on form "' . $form->slug . '"');
+                } else {
+                    $parsedown = new \Parsedown();
 
-				$email_validator = Validator::make(
-					['email' => $email],
-					['email' => 'required|email']
-				);
+                    $html_message = $parsedown->text($form->confirmation_message);
 
-				if($email_validator->fails()) {
-					Log::error('Confirmation email not sent : Invalid email address "' . $email . '" in field "' . $email_field->slug . '" of submission ' . $submission->id . ' on form "' . $form->slug . '"');
-				} else {
-					$parsedown = new \Parsedown();
+                    $html_message = preg_replace_callback('/:([0-9a-z_-]+)\b/i', function ($matches) use ($submission) {
+                        $field = $submission->fields->where('slug', $matches[1])->first();
 
-					$html_message = $parsedown->text($form->confirmation_message);
-					
-					$html_message = preg_replace_callback('/\:([0-9a-z_-]+)\b/i', function($matches) use($submission) {
-						$field = $submission->fields->where('slug', $matches[1])->first();
+                        if (!is_null($field)) {
+                            return e($field->pivot->value);
+                        }
 
-						if(!is_null($field)) {
-							return e($field->pivot->value);
-						}
+                        return ':' . $matches[1];
+                    }, $html_message);
 
-						return ':' . $matches[1];
-					}, $html_message);
+                    Mail::send('emails.confirmation', [
+                        // Cannot call it $message because it conflicts with a Illuminate\Mail\Message object
+                        'html_message' => $html_message,
+                        'submission' => $submission,
+                    ], function (Message $message) use ($email, $form) {
+                        if ($form->owner_email) {
+                            $message->from($form->owner_email, $form->owner_name);
+                        }
 
-					Mail::send('emails.confirmation', [
-						// Cannot call it $message because it conflicts with a Illuminate\Mail\Message object
-						'html_message' => $html_message,
-						'submission' => $submission,
-					], function($message) use($email, $form) {
-						$message->from($form->owner_email, is_null($form->owner_name) ? $form->owner_email : $form->owner_name);
+                        $message->to($email);
 
-						$message->to($email);
+                        $message->subject(trans('submission.heading.submitted'));
+                    });
 
-						$message->subject(trans('submission.heading.submitted'));
-					});
+                    $email_sent_successfully = true;
+                }
+            }
+        }
 
-					$email_sent_successfully = true;
-				}
-			}
-		}
+        // Redirect the user to the configured url, but not if an error occurred
+        if ($email_sent_successfully !== false && !is_null($form->redirect_to_url)) {
+            return redirect($form->redirect_to_url);
+        }
 
-		/**
-		 * Redirect the user to the configurer url, but not if an error occurred
-		 */
-		if($email_sent_successfully !== false && !is_null($form->redirect_to_url)) {
-			return redirect($form->redirect_to_url);
-		}
-
-		return response()->view('submissions.submitted', [
-			'email_sent_successfully' => $email_sent_successfully,
-		], 201);
-	}
-
+        return response()->view('submissions.submitted', [
+            'email_sent_successfully' => $email_sent_successfully,
+        ], 201);
+    }
 }
