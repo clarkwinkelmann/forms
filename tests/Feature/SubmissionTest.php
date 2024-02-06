@@ -157,4 +157,81 @@ class SubmissionTest extends TestCase
         $this->assertEquals('FakeBrowser1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234', $submission->user_agent);
         $this->assertEquals('https://fakewebsite.tld/456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234', $submission->user_referer);
     }
+
+    public function testSpamEmail()
+    {
+        $response = $this->call('POST', '/forms/test-with-email-confirmation', [
+            'email' => 'not.suspicious@gmail.com',
+        ]);
+
+        $response->assertStatus(201);
+
+        /**
+         * @var $submission Submission
+         */
+        $submission = Submission::query()->orderBy('id', 'desc')->first();
+
+        $this->assertEquals(0, $submission->is_spam);
+
+        $response = $this->call('POST', '/forms/test-with-email-confirmation', [
+            'email' => 'test@mail.ru',
+        ]);
+
+        $response->assertStatus(201);
+
+        /**
+         * @var $submission Submission
+         */
+        $submission = Submission::query()->orderBy('id', 'desc')->first();
+
+        $this->assertEquals(1, $submission->is_spam);
+    }
+
+    public function testSpamLink()
+    {
+        $response = $this->call('POST', '/forms/the-test', [
+            'name' => 'My site https://example.ch/',
+            'rating' => 1,
+        ]);
+
+        $response->assertStatus(201);
+
+        /**
+         * @var $submission Submission
+         */
+        $submission = Submission::query()->orderBy('id', 'desc')->first();
+
+        $this->assertEquals(0, $submission->is_spam);
+
+        $response = $this->call('POST', '/forms/the-test', [
+            'name' => 'My site https://example.com/',
+            'rating' => 1,
+        ]);
+
+        $response->assertStatus(201);
+
+        /**
+         * @var $submission Submission
+         */
+        $submission = Submission::query()->orderBy('id', 'desc')->first();
+
+        $this->assertEquals(1, $submission->is_spam);
+    }
+
+    public function testSpamWord()
+    {
+        $response = $this->call('POST', '/forms/the-test', [
+            'name' => 'This is about capital financing',
+            'rating' => 1,
+        ]);
+
+        $response->assertStatus(201);
+
+        /**
+         * @var $submission Submission
+         */
+        $submission = Submission::query()->orderBy('id', 'desc')->first();
+
+        $this->assertEquals(1, $submission->is_spam);
+    }
 }

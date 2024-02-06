@@ -30,7 +30,12 @@
         <tbody>
         <tr>
             <td>{{ trans('submission.label.created_at') }}</td>
-            <td>{{ $submission->created_at }}</td>
+            <td>
+                {{ $submission->created_at }}
+                @if($submission->is_spam)
+                    <span class="badge text-bg-danger">Spam</span>
+                @endif
+            </td>
         </tr>
         @foreach($fields as $field)
             <tr>

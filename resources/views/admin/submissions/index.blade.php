@@ -25,7 +25,12 @@
         <tbody>
         @forelse($submissions as $submission)
             <tr>
-                <td>{{ $submission->created_at }}</td>
+                <td>
+                    {{ $submission->created_at }}
+                    @if($submission->is_spam)
+                        <span class="badge text-bg-danger">Spam</span>
+                    @endif
+                </td>
                 <td>
                     @foreach($submission->fields as $field)
                         <div class="form-group">

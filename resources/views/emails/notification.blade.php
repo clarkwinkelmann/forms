@@ -17,7 +17,7 @@
         <dt>{{ $field->title }}</dt>
         @if(is_null($field_data))
             <dd><em>{{ trans('field.label.no_value') }}</em></dd>
-        @elseif(\Illuminate\Support\Str::contains($field_data->pivot->value, ['http://', 'https://']))
+        @elseif(\Illuminate\Support\Str::contains($field_data->pivot->value, ['http://', 'https://']) && $submission->is_spam)
             <dd><em>{{ trans('field.email_url_redacted') }}</em></dd>
         @else
             <dd>{{ $field_data->pivot->value }}</dd>

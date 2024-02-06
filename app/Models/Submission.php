@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $user_referer HTTP referer given by the agent or null if none
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property boolean $is_spam
  *
  * @property-read Form $form
  * @property-read Field[]|Collection $fields

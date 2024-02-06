@@ -9,6 +9,7 @@ use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class SubmissionController extends Controller
@@ -31,9 +32,74 @@ class SubmissionController extends Controller
             return response()->view('submissions.errors', ['messages' => $exception->validator->errors()], 422);
         }
 
+        $isSpam = false;
+
+        $emailBlacklist = config('spam.email_blacklist');
+
+        if ($emailBlacklist) {
+            $emailBlacklist = explode(',', $emailBlacklist);
+
+            foreach ($fields as $field) {
+                if (!Str::contains($field->rules, 'email')) {
+                    continue;
+                }
+
+                $value = $request->get($field->slug);
+
+                if (!$value) {
+                    continue;
+                }
+
+                foreach ($emailBlacklist as $emailSuffix) {
+                    if (Str::endsWith($value, ".$emailSuffix") || Str::endsWith($value, "@$emailSuffix")) {
+                        $isSpam = true;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        $flagAllUrls = config('spam.flag_all_urls');
+        $spamWords = config('spam.words_blacklist');
+
+        if ($spamWords) {
+            $spamWords = implode('|', array_map(function ($word) {
+                return preg_quote($word, '~');
+            }, explode(',', $spamWords)));
+        }
+
+        if ($flagAllUrls || $spamWords) {
+            foreach ($fields as $field) {
+                $value = $request->get($field->slug);
+
+                if ($spamWords && preg_match("~\b$spamWords\b~", $value) === 1) {
+                    $isSpam = true;
+                    break;
+                }
+
+                if ($flagAllUrls && preg_match_all('~https?://([^ /]+)[ /$]~', $value, $matches) > 0) {
+                    $trustedTLDs = config('spam.trusted_tlds');
+
+                    foreach ($matches[1] as $url) {
+                        if ($trustedTLDs) {
+                            foreach (explode(',', $trustedTLDs) as $tld) {
+                                if ($url === $tld || Str::endsWith($url, ".$tld")) {
+                                    continue 2;
+                                }
+                            }
+                        }
+
+                        $isSpam = true;
+                        break 2;
+                    }
+                }
+            }
+        }
+
         DB::beginTransaction();
 
         $submission = new Submission;
+        $submission->is_spam = $isSpam;
         $submission->user_ip = $request->ip();
         $submission->user_agent = substr((string)$request->server('HTTP_USER_AGENT'), 0, 255);
 
@@ -57,7 +123,7 @@ class SubmissionController extends Controller
 
         DB::commit();
 
-        if (!is_null($form->send_email_to)) {
+        if (!is_null($form->send_email_to) && (!$isSpam || config('send_notification_for_spam'))) {
             $send_to = explode(',', $form->send_email_to);
 
             foreach ($send_to as $email) {
@@ -83,7 +149,7 @@ class SubmissionController extends Controller
          */
         $email_sent_successfully = null;
 
-        if (!is_null($form->confirmation_message)) {
+        if (!is_null($form->confirmation_message) && (!$isSpam || config('send_confirmation_for_spam'))) {
             $email_sent_successfully = false; // From now defaults to false
 
             $email_field = $form->fields()->where('slug', $form->confirmation_email_field)->first();
