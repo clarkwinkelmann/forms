@@ -35,8 +35,10 @@ class SubmissionController extends Controller
 
         $submission = new Submission;
         $submission->user_ip = $request->ip();
-        $submission->user_agent = $request->server('HTTP_USER_AGENT');
-        $submission->user_referer = $request->server('HTTP_REFERER');
+        $submission->user_agent = substr((string)$request->server('HTTP_USER_AGENT'), 0, 255);
+
+        $referer = $request->server('HTTP_REFERER');
+        $submission->user_referer = $referer ? substr($referer, 0, 255) : null;
 
         $form->submissions()->save($submission);
 
