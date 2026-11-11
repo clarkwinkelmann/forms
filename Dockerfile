@@ -21,3 +21,6 @@ RUN composer install --no-dev --no-interaction --optimize-autoloader \
 ENV TRUSTED_PROXIES=*
 # Coolify shows the container output as logs
 ENV LOG_CHANNEL=stderr
+
+# the base image already exposes port 80, but Coolify only reads the port from this file
+EXPOSE 80
