@@ -48,6 +48,16 @@ php artisan migrate
 
 The app is ready. Have a look at the users section below to get started.
 
+### Docker
+
+The `Dockerfile` builds an image that serves the app with Apache on port 80. Coolify can build it straight from this repository.
+
+The container reads its configuration from environment variables instead of a `.env` file. It needs at least `APP_KEY`, plus the `DB_*` and `MAIL_*` variables from `.env.example`.
+
+Run `php artisan migrate --force` in the container after each deploy, such as with Coolify's post-deployment command.
+
+The image writes its logs to the container output. It trusts the `X-Forwarded-*` headers from any address, so only expose it through a reverse proxy, such as the one Coolify runs.
+
 ### Users
 
 There is no fancy UI to manage users and the login is done through a basic HTTP auth method.
