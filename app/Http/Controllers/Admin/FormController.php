@@ -29,8 +29,8 @@ class FormController extends Controller
 
         $form = new Form;
 
-        $form->slug = $request->get('slug');
-        $form->title = $request->get('title');
+        $form->slug = $request->input('slug');
+        $form->title = $request->input('title');
 
         $form->save();
 
@@ -61,15 +61,15 @@ class FormController extends Controller
             'owner_name' => 'nullable|string',
         ]);
 
-        $form->slug = $request->get('slug');
-        $form->title = $request->get('title');
-        $form->accept_submissions = !!$request->get('accept_submissions', false);
-        $form->send_email_to = $request->get('send_email_to', '') == '' ? null : $request->get('send_email_to');
-        $form->confirmation_message = $request->get('confirmation_message', '') == '' ? null : $request->get('confirmation_message');
-        $form->confirmation_email_field = $request->get('confirmation_email_field', '') == '' ? null : $request->get('confirmation_email_field');
-        $form->redirect_to_url = $request->get('redirect_to_url', '') == '' ? null : $request->get('redirect_to_url');
-        $form->owner_email = $request->get('owner_email', '') == '' ? null : $request->get('owner_email');
-        $form->owner_name = $request->get('owner_name', '') == '' ? null : $request->get('owner_name');
+        $form->slug = $request->input('slug');
+        $form->title = $request->input('title');
+        $form->accept_submissions = !!$request->input('accept_submissions', false);
+        $form->send_email_to = $request->input('send_email_to', '') == '' ? null : $request->input('send_email_to');
+        $form->confirmation_message = $request->input('confirmation_message', '') == '' ? null : $request->input('confirmation_message');
+        $form->confirmation_email_field = $request->input('confirmation_email_field', '') == '' ? null : $request->input('confirmation_email_field');
+        $form->redirect_to_url = $request->input('redirect_to_url', '') == '' ? null : $request->input('redirect_to_url');
+        $form->owner_email = $request->input('owner_email', '') == '' ? null : $request->input('owner_email');
+        $form->owner_name = $request->input('owner_name', '') == '' ? null : $request->input('owner_name');
 
         $form->save();
 

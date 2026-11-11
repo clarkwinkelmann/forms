@@ -23,7 +23,7 @@ If you setup a redirect, your users will not even see this application.
 
 ### Installation
 
-This is a PHP application built with the Laravel Framework.
+This is a PHP application built with the Laravel Framework. It requires PHP 8.4 or later.
 
 The app was tested under a PHP/Apache/MySQL setup but any configuration supported by Laravel should work out of the box.
 
@@ -48,6 +48,16 @@ php artisan migrate
 
 The app is ready. Have a look at the users section below to get started.
 
+### Docker
+
+The `Dockerfile` builds an image that serves the app with Apache on port 80. Coolify can build it straight from this repository.
+
+The container reads its configuration from environment variables instead of a `.env` file. It needs at least `APP_KEY`, plus the `DB_*` and `MAIL_*` variables from `.env.example`. Leave `LOG_CHANNEL` unset, so the logs go to the container output.
+
+Run `php artisan migrate --force` in the container after each deploy, such as with Coolify's post-deployment command.
+
+The image trusts the `X-Forwarded-*` headers from any address, so only expose it through a reverse proxy, such as the one Coolify runs.
+
 ### Users
 
 There is no fancy UI to manage users and the login is done through a basic HTTP auth method.
@@ -66,7 +76,7 @@ Use the admin area to create new forms and fields.
 All fields are well described so it should be easy.
 The `slug` attributes are the ones you will reuse in your HTML.
 
-The `rules` attribute accept any [Laravel-compatible rule string](https://laravel.com/docs/5.2/validation#available-validation-rules).
+The `rules` attribute accept any [Laravel-compatible rule string](https://laravel.com/docs/13.x/validation#available-validation-rules).
 
 Then configure your HTML form in the following fashion:
 
