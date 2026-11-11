@@ -21,9 +21,9 @@ class FormFieldController extends Controller
 
         $field = new Field;
 
-        $field->slug = $request->get('slug');
-        $field->title = $request->get('title');
-        $field->rules = $request->get('rules', '');
+        $field->slug = $request->input('slug');
+        $field->title = $request->input('title');
+        $field->rules = $request->input('rules', '');
 
         $form->fields()->save($field);
 
@@ -42,9 +42,9 @@ class FormFieldController extends Controller
             'rules' => 'string',
         ]);
 
-        $field->slug = $request->get('slug');
-        $field->title = $request->get('title');
-        $field->rules = $request->get('rules', '');
+        $field->slug = $request->input('slug');
+        $field->title = $request->input('title');
+        $field->rules = $request->input('rules', '');
 
         $field->save();
 

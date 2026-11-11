@@ -44,7 +44,7 @@ class SubmissionController extends Controller
                     continue;
                 }
 
-                $value = $request->get($field->slug);
+                $value = $request->input($field->slug);
 
                 if (!$value) {
                     continue;
@@ -70,7 +70,11 @@ class SubmissionController extends Controller
 
         if ($flagAllUrls || $spamWords) {
             foreach ($fields as $field) {
-                $value = $request->get($field->slug);
+                $value = $request->input($field->slug);
+
+                if (!$value) {
+                    continue;
+                }
 
                 if ($spamWords && preg_match("~\b$spamWords\b~", $value) === 1) {
                     $isSpam = true;
@@ -109,7 +113,7 @@ class SubmissionController extends Controller
         $form->submissions()->save($submission);
 
         foreach ($fields as $field) {
-            $value = $request->get($field->slug, null);
+            $value = $request->input($field->slug, null);
 
             // Do not store null or non-given values
             if (is_null($value)) {

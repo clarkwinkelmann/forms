@@ -4,8 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Form;
 use App\Models\Submission;
-use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\SentMessage;
+use Symfony\Component\Mime\Address;
 use Tests\TestCase;
 
 /**
@@ -78,52 +79,37 @@ class SubmissionTest extends TestCase
     {
         $form = Form::where('slug', 'test-with-email-notification')->firstOrFail();
 
-        $should_be_sent_to = collect(explode(',', $form->send_email_to));
-        $sent_to = collect();
-
-        Mail::shouldReceive('send')->twice()
-            ->andReturnUsing(function ($view, $data, $callback) use ($sent_to) {
-                // replicate the behavior of Illuminate\Mail\Mailer::callMessageBuilder()
-                // so we can test what would have been the output of the method send()
-                $message = new Message(new \Swift_Message);
-
-                call_user_func($callback, $message);
-
-                $sent_to->push(collect($message->getTo())->keys()->first());
-
-                return $message;
-            });
-
         $response = $this->call('POST', '/forms/' . $form->slug);
 
         $response->assertStatus(201);
 
-        // There should be no difference
-        $this->assertEquals(0, $should_be_sent_to->diff($sent_to)->count());
+        $this->assertEqualsCanonicalizing(explode(',', $form->send_email_to), $this->sentTo());
     }
 
     public function testSendEmailConfirmation()
     {
         $form = Form::where('slug', 'test-with-email-confirmation')->firstOrFail();
 
-        Mail::shouldReceive('send')->once()
-            ->andReturnUsing(function ($view, $data, $callback) {
-                // replicate the behavior of Illuminate\Mail\Mailer::callMessageBuilder()
-                // so we can test what would have been the result of the send() method
-                $message = new Message(new \Swift_Message);
-
-                call_user_func($callback, $message);
-
-                $this->assertEquals('john@example.com', collect($message->getTo())->keys()->first());
-
-                return $message;
-            });
-
         $response = $this->call('POST', '/forms/' . $form->slug, [
             'email' => 'john@example.com',
         ]);
 
         $response->assertStatus(201);
+
+        $this->assertEquals(['john@example.com'], $this->sentTo());
+    }
+
+    /**
+     * Get the recipients of every email sent during the test. Emails go to the array mailer, set in phpunit.xml
+     *
+     * @return string[]
+     */
+    private function sentTo(): array
+    {
+        return Mail::getSymfonyTransport()->messages()
+            ->flatMap(fn (SentMessage $message) => $message->getEnvelope()->getRecipients())
+            ->map(fn (Address $address) => $address->getAddress())
+            ->all();
     }
 
     public function testRedirectAfterSubmission()

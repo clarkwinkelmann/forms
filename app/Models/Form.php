@@ -30,7 +30,8 @@ class Form extends Model
 {
     public function fields(): HasMany
     {
-        return $this->hasMany(Field::class);
+        // without an order, MariaDB 12 returns the fields sorted by slug through the (form_id, slug) index
+        return $this->hasMany(Field::class)->orderBy('id');
     }
 
     public function submissions(): HasMany

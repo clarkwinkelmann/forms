@@ -23,7 +23,7 @@ If you setup a redirect, your users will not even see this application.
 
 ### Installation
 
-This is a PHP application built with the Laravel Framework.
+This is a PHP application built with the Laravel Framework. It requires PHP 8.4 or later.
 
 The app was tested under a PHP/Apache/MySQL setup but any configuration supported by Laravel should work out of the box.
 
@@ -66,7 +66,7 @@ Use the admin area to create new forms and fields.
 All fields are well described so it should be easy.
 The `slug` attributes are the ones you will reuse in your HTML.
 
-The `rules` attribute accept any [Laravel-compatible rule string](https://laravel.com/docs/5.2/validation#available-validation-rules).
+The `rules` attribute accept any [Laravel-compatible rule string](https://laravel.com/docs/13.x/validation#available-validation-rules).
 
 Then configure your HTML form in the following fashion:
 

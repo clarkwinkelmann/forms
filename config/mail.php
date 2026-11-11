@@ -28,21 +28,25 @@ return [
     | sending an e-mail. You will specify which one you are using for your
     | mailers below. You are free to add additional mailers as required.
     |
-    | Supported: "smtp", "sendmail", "mailgun", "ses",
-    |            "postmark", "log", "array", "failover"
+    | Supported: "smtp", "sendmail", "log", "array", "failover"
+    |
+    | The "mailgun", "ses" and "postmark" transports need an extra Composer package. See the Laravel mail docs.
     |
     */
 
     'mailers' => [
         'smtp' => [
             'transport' => 'smtp',
+            // MAIL_ENCRYPTION "ssl" connects with TLS from the start, on any port
+            // MAIL_ENCRYPTION "tls" or unset requires STARTTLS, and sending fails when the server doesn't offer it
+            // any other value, such as null, uses TLS on port 465, and STARTTLS on other ports when the server offers it
+            'scheme' => env('MAIL_SCHEME', env('MAIL_ENCRYPTION', 'tls') === 'ssl' ? 'smtps' : null),
+            'require_tls' => env('MAIL_ENCRYPTION', 'tls') === 'tls',
             'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
             'port' => env('MAIL_PORT', 587),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
-            'auth_mode' => null,
         ],
 
         'ses' => [
